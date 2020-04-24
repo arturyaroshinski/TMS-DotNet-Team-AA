@@ -13,7 +13,7 @@ namespace CurrencyExchangeApp
     {
         private static readonly HttpClient httpClient = new HttpClient();
 
-        private static readonly string path = @"..\test.txt";
+        private const string PATH = @"..\test.txt";
 
         static void Main(string[] args)
         {
@@ -40,7 +40,7 @@ namespace CurrencyExchangeApp
                         break;
                     case "2":
                         {
-                            GetRateAsync().GetAwaiter().GetResult();
+                            ShowRate().GetAwaiter().GetResult();
                             break;
                         }
                     case "3":
@@ -69,8 +69,8 @@ namespace CurrencyExchangeApp
             return JsonConvert.DeserializeObject<Currency[]>(content);
         }
 
-        // Вывод курса валюты по ID
-        private static async Task GetRateAsync()
+        // Вывод курса валюты на консоль по ID.
+        public static async Task ShowRate()
         {
             int id = 298;
             bool flag = false;
@@ -98,23 +98,29 @@ namespace CurrencyExchangeApp
                 }
             }
 
+            Rate rate = GetRateAsync(id).GetAwaiter().GetResult();
+
+            var text = $"{rate.Date}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate}.";
+            Console.WriteLine(text);
+
+            Console.WriteLine("Нажмите Y, если хотите сохранить данные курса.");
+            if (Console.ReadKey().Key.Equals(ConsoleKey.Y))
+            {
+                await SaveAsync(PATH, text);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("\nСохранение выполнено успешно.");
+            }
+        }
+
+        // Возвращает объект класса Rate по ID.
+        private static async Task<Rate> GetRateAsync(int id)
+        {
             var response = await httpClient.GetAsync($"https://www.nbrb.by/api/exrates/rates/ {id}");
 
             string content = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
 
-            Rate rate = JsonConvert.DeserializeObject<Rate>(content);
-
-            var text = $"{rate.Date}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate}.";
-            Console.WriteLine(text);
-
-            Console.WriteLine("Нажмите Y если хотите сохранить данные курса.");
-            if (Console.ReadKey().Key.Equals(ConsoleKey.Y))
-            {
-                await SaveAsync(path, text);
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("\nСохранение выполнено успешно.");
-            }
+            return JsonConvert.DeserializeObject<Rate>(content);
         }
 
         /// <summary>
@@ -130,7 +136,7 @@ namespace CurrencyExchangeApp
             }
         }
 
-        // Возвращает true, если валюда с таким id существует.
+        // Возвращает true, если валюта с таким id существует.
         private static bool IdIsExist(int id)
         {
             var currencies = GetAllCurrenciesAsync().GetAwaiter().GetResult();
@@ -140,6 +146,11 @@ namespace CurrencyExchangeApp
         // Сохранение строки text по пути path.
         private static async Task SaveAsync(string path, string text)
         {
+            if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentNullException();
+            }
+
             using (StreamWriter sw = new StreamWriter(path, true, Encoding.UTF8))
             {
                 await sw.WriteLineAsync(text);
