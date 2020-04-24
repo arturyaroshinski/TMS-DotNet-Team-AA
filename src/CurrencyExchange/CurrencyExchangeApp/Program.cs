@@ -69,7 +69,9 @@ namespace CurrencyExchangeApp
             return JsonConvert.DeserializeObject<Currency[]>(content);
         }
 
-        // Вывод курса валюты на консоль по ID.
+        /// <summary>
+        /// Вывод курса валюты на консоль по ID.
+        /// </summary>
         public static async Task ShowRate()
         {
             int id = 298;
@@ -143,7 +145,12 @@ namespace CurrencyExchangeApp
             return currencies.Any(x => x.Cur_ID == id);
         }
 
-        // Сохранение строки text по пути path.
+        /// <summary>
+        /// Сохранение строки по заданному пути.
+        /// </summary>
+        /// <param name="path">Путь.</param>
+        /// <param name="text">Текст.</param>
+        /// <returns></returns>
         public static async Task SaveAsync(string path, string text)
         {
             if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(text))
