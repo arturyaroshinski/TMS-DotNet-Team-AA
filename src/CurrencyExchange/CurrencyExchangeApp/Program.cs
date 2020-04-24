@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace CurrencyExchangeApp
 {
-    class Program
+    public static class Program
     {
         private static readonly HttpClient httpClient = new HttpClient();
 
@@ -144,7 +144,7 @@ namespace CurrencyExchangeApp
         }
 
         // Сохранение строки text по пути path.
-        private static async Task SaveAsync(string path, string text)
+        public static async Task SaveAsync(string path, string text)
         {
             if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(text))
             {
