@@ -1,26 +1,19 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using CurrencyExchange.API;
-using Newtonsoft.Json;
+using CurrencyExchange;
 
 namespace CurrencyExchangeApp
 {
     public static class Program
     {
-        private static readonly HttpClient httpClient = new HttpClient();
-
-        private const string PATH = @"..\test.txt";
-
         static void Main(string[] args)
         {
-            Menu();
+            var curController = new CurrencyExchangeController();
+
+            Menu(curController);
         }
 
-        private static void Menu()
+        private static void Menu(CurrencyExchangeController controller)
         {
             while (true)
             {
@@ -35,12 +28,12 @@ namespace CurrencyExchangeApp
                 {
                     case "1":
                         {
-                            ShowAllCurrencies();
+                            controller.ShowAllCurrencies();
                         }
                         break;
                     case "2":
                         {
-                            ShowRate().GetAwaiter().GetResult();
+                            controller.ShowRate();
                             break;
                         }
                     case "3":
@@ -55,112 +48,6 @@ namespace CurrencyExchangeApp
                             break;
                         }
                 }
-            }
-        }
-
-        // Возвращает массив объектов класса Currency.
-        private static async Task<Currency[]> GetAllCurrenciesAsync()
-        {
-            var response = await httpClient.GetAsync("https://www.nbrb.by/api/exrates/currencies");
-
-            string content = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-
-            return JsonConvert.DeserializeObject<Currency[]>(content);
-        }
-
-        /// <summary>
-        /// Вывод курса валюты на консоль по ID.
-        /// </summary>
-        public static async Task ShowRate()
-        {
-            int id = 298;
-            bool flag = false;
-
-            while (!flag)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Для получения курса введите ID валюты(Для просмотра списка валют введите 0).");
-
-                var userInput = Console.ReadLine();
-
-                if (int.TryParse(userInput, out id))
-                {
-                    if (id == 0)
-                        ShowAllCurrencies();
-                    else
-                    {
-                        if (IdIsExist(id))
-                            break;
-
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Валюты с ID {id} не существует.");
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                    }
-                }
-            }
-
-            Rate rate = GetRateAsync(id).GetAwaiter().GetResult();
-
-            var text = $"{rate.Date}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate}.";
-            Console.WriteLine(text);
-
-            Console.WriteLine("Нажмите Y, если хотите сохранить данные курса.");
-            if (Console.ReadKey().Key.Equals(ConsoleKey.Y))
-            {
-                await SaveAsync(PATH, text);
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("\nСохранение выполнено успешно.");
-            }
-        }
-
-        // Возвращает объект класса Rate по ID.
-        private static async Task<Rate> GetRateAsync(int id)
-        {
-            var response = await httpClient.GetAsync($"https://www.nbrb.by/api/exrates/rates/ {id}");
-
-            string content = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-
-            return JsonConvert.DeserializeObject<Rate>(content);
-        }
-
-        /// <summary>
-        /// Вывод на консоль всех валют.
-        /// </summary>
-        public static void ShowAllCurrencies()
-        {
-            Currency[] currencies = GetAllCurrenciesAsync().GetAwaiter().GetResult();
-
-            foreach (var cur in currencies)
-            {
-                Console.WriteLine($"{cur.Cur_Name} : ID = {cur.Cur_ID}.");
-            }
-        }
-
-        // Возвращает true, если валюта с таким id существует.
-        private static bool IdIsExist(int id)
-        {
-            var currencies = GetAllCurrenciesAsync().GetAwaiter().GetResult();
-            return currencies.Any(x => x.Cur_ID == id);
-        }
-
-        /// <summary>
-        /// Сохранение строки по заданному пути.
-        /// </summary>
-        /// <param name="path">Путь.</param>
-        /// <param name="text">Текст.</param>
-        /// <returns></returns>
-        public static async Task SaveAsync(string path, string text)
-        {
-            if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(text))
-            {
-                throw new ArgumentNullException();
-            }
-
-            using (StreamWriter sw = new StreamWriter(path, true, Encoding.UTF8))
-            {
-                await sw.WriteLineAsync(text);
             }
         }
     }
