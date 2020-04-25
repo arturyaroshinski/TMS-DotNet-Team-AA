@@ -15,7 +15,6 @@ namespace CurrencyExchange
 
         private HttpClient _httpClient = new HttpClient();
 
-        // TODO: добавить выбор пути
         private const string PATH = @"..\test.txt";
 
         // Возвращает массив объектов класса Currency.
@@ -73,6 +72,7 @@ namespace CurrencyExchange
 
             Rate rate = GetRateAsync(id).GetAwaiter().GetResult();
 
+            // TODO: изменить строку на другой формат
             var text = $"{rate.Date}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate}.";
             Console.WriteLine(text);
 
@@ -104,6 +104,7 @@ namespace CurrencyExchange
         private bool IdIsExist(int id)
         {
             // TODO: Проверить есть ли в кеше, если там null, то добавлить в кэш
+
             var currencies = GetAllCurrenciesAsync().GetAwaiter().GetResult();
             return currencies.Any(x => x.Cur_ID == id);
         }

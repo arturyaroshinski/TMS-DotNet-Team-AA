@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http;
 using CurrencyExchange;
 
 namespace CurrencyExchangeApp
@@ -19,6 +18,7 @@ namespace CurrencyExchangeApp
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
+                // TODO: добавить еще одно действие - вывод на консоль сохраненных запросов.
                 Console.WriteLine();
                 Console.WriteLine("Меню:");
                 Console.WriteLine("[1] Список валют.\n[2] Узнать курс.\n[3] Выход.");
