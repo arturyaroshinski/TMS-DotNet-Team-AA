@@ -18,35 +18,40 @@ namespace CurrencyExchangeApp
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
-                // TODO: добавить еще одно действие - вывод на консоль сохраненных запросов.
                 Console.WriteLine();
                 Console.WriteLine("Меню:");
-                Console.WriteLine("[1] Список валют.\n[2] Узнать курс.\n[3] Выход.");
+                Console.WriteLine("[1] Список валют.\n[2] Узнать курс.\n[3]Вывести сохраненные запросы\n[4] Выход.");
                 Console.WriteLine("Выберите действие, путем ввода его номера.");
+               
 
                 switch (Console.ReadLine())
                 {
                     case "1":
-                        {
-                            controller.ShowAllCurrencies();
-                        }
+                    {
+                        controller.ShowAllCurrencies();
                         break;
+                    } 
                     case "2":
-                        {
-                            controller.ShowRate();
-                            break;
-                        }
+                    {
+                        controller.ShowRate();
+                        break;
+                    }
                     case "3":
-                        {
-                            Environment.Exit(0);
-                            break;
-                        }
+                    {
+                        controller.ShowSavedData();
+                        break;
+                    }
+                    case "4":
+                    {
+                        Environment.Exit(0);
+                        break;
+                    } 
                     default:
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("Некорректный ввод.");
-                            break;
-                        }
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Некорректный ввод.");
+                        break;
+                    }
                 }
             }
         }

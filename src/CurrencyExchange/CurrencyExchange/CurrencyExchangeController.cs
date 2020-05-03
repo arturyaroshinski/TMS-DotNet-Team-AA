@@ -11,7 +11,8 @@ namespace CurrencyExchange
 {
     public class CurrencyExchangeController
     {
-        private Currency[] _cash { get; set; }
+        private Currency[] _cache { get; set; }
+        private DateTime LastUpdated { get; set; } = new DateTime();
 
         private HttpClient _httpClient = new HttpClient();
 
@@ -26,6 +27,15 @@ namespace CurrencyExchange
             response.EnsureSuccessStatusCode();
 
             return JsonConvert.DeserializeObject<Currency[]>(content);
+        }
+
+        // Обновляет кэш
+        private void UpdateCache()
+        {
+            if (DateTime.Now - LastUpdated >= TimeSpan.FromDays(1))
+            {
+                _cache = GetAllCurrenciesAsync().GetAwaiter().GetResult();
+            }
         }
 
         // Возвращает объект класса Rate по ID.
@@ -71,9 +81,7 @@ namespace CurrencyExchange
             }
 
             Rate rate = GetRateAsync(id).GetAwaiter().GetResult();
-
-            // TODO: изменить строку на другой формат
-            var text = $"{rate.Date}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate}.";
+            var text = $"{rate.Date}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate} за {rate.Cur_Scale} единиц валюты.";
             Console.WriteLine(text);
 
             Console.WriteLine("Нажмите Y, если хотите сохранить данные курса.");
@@ -82,6 +90,7 @@ namespace CurrencyExchange
                 SaveAsync(PATH, text).GetAwaiter().GetResult();
 
                 Console.ForegroundColor = ConsoleColor.Green;
+
                 Console.WriteLine("\nСохранение выполнено успешно.");
             }
         }
@@ -90,11 +99,8 @@ namespace CurrencyExchange
         /// </summary>
         public void ShowAllCurrencies()
         {
-            // TODO: Проверить есть ли в кеше, если там null, то добавлить в кэш
-
-            Currency[] currencies = GetAllCurrenciesAsync().GetAwaiter().GetResult();
-
-            foreach (var cur in currencies)
+            UpdateCache();
+            foreach (var cur in _cache)
             {
                 Console.WriteLine($"{cur.Cur_Name} : ID = {cur.Cur_ID}.");
             }
@@ -103,10 +109,8 @@ namespace CurrencyExchange
         // Возвращает true, если валюта с таким id существует.
         private bool IdIsExist(int id)
         {
-            // TODO: Проверить есть ли в кеше, если там null, то добавлить в кэш
-
-            var currencies = GetAllCurrenciesAsync().GetAwaiter().GetResult();
-            return currencies.Any(x => x.Cur_ID == id);
+            UpdateCache();
+            return _cache.Any(x => x.Cur_ID == id);
         }
 
         /// <summary>
@@ -124,6 +128,13 @@ namespace CurrencyExchange
             {
                 await sw.WriteLineAsync(text);
             }
+        }
+
+        public void ShowSavedData()
+        {
+            StreamReader sr = new StreamReader(PATH, Encoding.UTF8);
+            Console.WriteLine(sr.ReadToEnd());
+            
         }
     }
 }
