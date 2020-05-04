@@ -1,5 +1,4 @@
 using CurrencyExchange;
-using CurrencyExchangeApp;
 using System;
 using Xunit;
 
@@ -21,6 +20,20 @@ namespace CurrencyExchangeTests
 
             // Assert
             Assert.Equal(ex.GetType(), arg.GetType());
+        }
+
+        [Fact]
+        public void CurrencyExchangeController_WhenIdIsIncorrect_Return_false()
+        {
+            // Arrange
+            var controller = new CurrencyExchangeController();
+            var id = -1;
+
+            // Act
+            bool idIsExist = controller.IdIsExist(id);
+
+            // Assert
+            Assert.False(idIsExist);
         }
     }
 }

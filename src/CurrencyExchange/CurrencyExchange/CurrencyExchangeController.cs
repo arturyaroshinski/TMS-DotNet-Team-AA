@@ -11,10 +11,11 @@ namespace CurrencyExchange
 {
     public class CurrencyExchangeController
     {
-        private Currency[] _cache { get; set; }
+        private Currency[] Cache { get; set; }
+
         private DateTime LastUpdated { get; set; } = new DateTime();
 
-        private HttpClient _httpClient = new HttpClient();
+        private readonly HttpClient _httpClient = new HttpClient();
 
         private const string PATH = @"..\test.txt";
 
@@ -34,7 +35,8 @@ namespace CurrencyExchange
         {
             if (DateTime.Now - LastUpdated >= TimeSpan.FromDays(1))
             {
-                _cache = GetAllCurrenciesAsync().GetAwaiter().GetResult();
+                Cache = GetAllCurrenciesAsync().GetAwaiter().GetResult();
+                LastUpdated = DateTime.Now;
             }
         }
 
@@ -81,7 +83,7 @@ namespace CurrencyExchange
             }
 
             Rate rate = GetRateAsync(id).GetAwaiter().GetResult();
-            var text = $"{rate.Date}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate} за {rate.Cur_Scale} единиц валюты.";
+            var text = $"{rate.Date:D}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate} за {rate.Cur_Scale} единиц валюты.";
             Console.WriteLine(text);
 
             Console.WriteLine("Нажмите Y, если хотите сохранить данные курса.");
@@ -100,17 +102,17 @@ namespace CurrencyExchange
         public void ShowAllCurrencies()
         {
             UpdateCache();
-            foreach (var cur in _cache)
+            foreach (var cur in Cache)
             {
                 Console.WriteLine($"{cur.Cur_Name} : ID = {cur.Cur_ID}.");
             }
         }
 
         // Возвращает true, если валюта с таким id существует.
-        private bool IdIsExist(int id)
+        public bool IdIsExist(int id)
         {
             UpdateCache();
-            return _cache.Any(x => x.Cur_ID == id);
+            return Cache.Any(x => x.Cur_ID == id);
         }
 
         /// <summary>
@@ -130,11 +132,13 @@ namespace CurrencyExchange
             }
         }
 
+        /// <summary>
+        /// Вывод сохраненной информации на консоль.
+        /// </summary>
         public void ShowSavedData()
         {
             StreamReader sr = new StreamReader(PATH, Encoding.UTF8);
             Console.WriteLine(sr.ReadToEnd());
-            
         }
     }
 }

@@ -20,7 +20,7 @@ namespace CurrencyExchangeApp
 
                 Console.WriteLine();
                 Console.WriteLine("Меню:");
-                Console.WriteLine("[1] Список валют.\n[2] Узнать курс.\n[3]Вывести сохраненные запросы\n[4] Выход.");
+                Console.WriteLine("[1] Список валют.\n[2] Узнать курс.\n[3] Вывести сохраненные запросы\n[4] Выход.");
                 Console.WriteLine("Выберите действие, путем ввода его номера.");
                
 
