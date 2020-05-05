@@ -4,26 +4,27 @@ using Xunit;
 
 namespace CurrencyExchangeTests
 {
-    public class UnitTest1
+    public class CurrencyExchangeControllerTests
     {
         [Fact]
-        public void CurrencyExchangeController_WhenPathOrTextIsNull_Return_Exception()
+        public void CurrencyExchangeController_WhenPathOrTextIsNull_Exception()
         {
             // Arrange
             var controller = new CurrencyExchangeController();
+            var saveAndReadController = new SaveAndReadDataController();
             string path = "  ";
             string text = null;
             var arg = new ArgumentNullException();
 
             // Act
-            var ex = Assert.ThrowsAsync<ArgumentNullException>(() => CurrencyExchangeController.SaveAsync(path, text)).GetAwaiter().GetResult();
+            var ex = Assert.ThrowsAsync<ArgumentNullException>(() => saveAndReadController.SaveDateAsync(path, text)).GetAwaiter().GetResult();
 
             // Assert
             Assert.Equal(ex.GetType(), arg.GetType());
         }
 
         [Fact]
-        public void CurrencyExchangeController_WhenIdIsIncorrect_Return_false()
+        public void CurrencyExchangeController_WhenIdIsIncorrect_False()
         {
             // Arrange
             var controller = new CurrencyExchangeController();

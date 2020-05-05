@@ -1,64 +1,37 @@
 ﻿using CurrencyExchange.API;
 using Newtonsoft.Json;
 using System;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CurrencyExchange
 {
     public class CurrencyExchangeController
     {
+        private readonly HttpClient _httpClient = new HttpClient();
+        
         private Currency[] Cache { get; set; }
 
         private DateTime LastUpdated { get; set; } = new DateTime();
 
-        private readonly HttpClient _httpClient = new HttpClient();
 
-        private const string PATH = @"..\test.txt";
 
-        // Возвращает массив объектов класса Currency.
-        private async Task<Currency[]> GetAllCurrenciesAsync()
-        {
-            var response = await _httpClient.GetAsync("https://www.nbrb.by/api/exrates/currencies");
-
-            string content = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-
-            return JsonConvert.DeserializeObject<Currency[]>(content);
-        }
-
-        // Обновляет кэш
-        private void UpdateCache()
-        {
-            if (DateTime.Now - LastUpdated >= TimeSpan.FromDays(1))
-            {
-                Cache = GetAllCurrenciesAsync().GetAwaiter().GetResult();
-                LastUpdated = DateTime.Now;
-            }
-        }
-
-        // Возвращает объект класса Rate по ID.
-        private async Task<Rate> GetRateAsync(int id)
-        {
-            var response = await _httpClient.GetAsync($"https://www.nbrb.by/api/exrates/rates/ {id}");
-
-            string content = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-
-            return JsonConvert.DeserializeObject<Rate>(content);
-        }
 
         /// <summary>
         /// Вывод курса валюты на консоль по ID.
         /// </summary>
         public void ShowRate()
         {
+            // TODO: refactor it!!!
+
+
+            // TODO: Delete magic number
             int id = 298;
             bool flag = false;
 
+
+            // TODO: To another method 1
             while (!flag)
             {
                 Console.WriteLine();
@@ -82,33 +55,38 @@ namespace CurrencyExchange
                 }
             }
 
+
+
+            // TODO: To another method 2
             Rate rate = GetRateAsync(id).GetAwaiter().GetResult();
             var text = $"{rate.Date:D}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate} за {rate.Cur_Scale} единиц валюты.";
             Console.WriteLine(text);
 
+
+
+            // TODO: To another method 3
+            // TODO: Exception (User input)
             Console.WriteLine("Нажмите Y, если хотите сохранить данные курса.");
             if (Console.ReadKey().Key.Equals(ConsoleKey.Y))
             {
-                SaveAsync(PATH, text).GetAwaiter().GetResult();
+                var saveData = new SaveAndReadDataController();
+                saveData.SaveDateAsync(Constants.PATH, text).GetAwaiter().GetResult();
 
                 Console.ForegroundColor = ConsoleColor.Green;
 
                 Console.WriteLine("\nСохранение выполнено успешно.");
             }
         }
-        /// <summary>
-        /// Вывод на консоль всех валют.
-        /// </summary>
-        public void ShowAllCurrencies()
-        {
-            UpdateCache();
-            foreach (var cur in Cache)
-            {
-                Console.WriteLine($"{cur.Cur_Name} : ID = {cur.Cur_ID}.");
-            }
-        }
 
-        // Возвращает true, если валюта с таким id существует.
+
+
+
+
+        /// <summary>
+        /// Проверить существует ли Id.
+        /// </summary>
+        /// <param name="id">Идентификатор.</param>
+        /// <returns>Возвращает true, если валюта с таким id существует.</returns>
         public bool IdIsExist(int id)
         {
             UpdateCache();
@@ -116,29 +94,64 @@ namespace CurrencyExchange
         }
 
         /// <summary>
-        /// Сохранение строки по заданному пути.
+        /// Вывод на консоль всех валют.
         /// </summary>
-        /// <param name="path">Путь.</param>
-        /// <param name="text">Текст.</param>
-        /// <returns></returns>
-        public static async Task SaveAsync(string path, string text)
+        public void ShowAllCurrencies()
         {
-            path = path ?? throw new ArgumentNullException(nameof(path));
-            text = text ?? throw new ArgumentNullException(nameof(text));
+            UpdateCache();
+            var emptyRow = new string('=', 52);
 
-            using (StreamWriter sw = new StreamWriter(path, true, Encoding.UTF8))
+            // TODO: Generate header
+            Console.WriteLine(emptyRow);
+            foreach (var cur in Cache)
             {
-                await sw.WriteLineAsync(text);
+                // TODO: https://stackoverflow.com/questions/856845/how-to-best-way-to-draw-table-in-console-app-c
+
+                Console.WriteLine("| {0,5} | {1,40} |", cur.Cur_ID, cur.Cur_Name);
+                Console.WriteLine(emptyRow);
             }
         }
 
-        /// <summary>
-        /// Вывод сохраненной информации на консоль.
-        /// </summary>
-        public void ShowSavedData()
+        // Обновляет кэш
+        private void UpdateCache()
         {
-            StreamReader sr = new StreamReader(PATH, Encoding.UTF8);
-            Console.WriteLine(sr.ReadToEnd());
+            try
+            {
+                if (DateTime.Now - LastUpdated >= TimeSpan.FromDays(1))
+                {
+                    Cache = GetAllCurrenciesAsync().GetAwaiter().GetResult();
+                    LastUpdated = DateTime.Now;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{Constants.EXCEPTION_TEXT}{ex.Message}");
+            }
+        }
+
+        // Возвращает массив объектов класса Currency.
+        private async Task<Currency[]> GetAllCurrenciesAsync()
+        {
+            // TODO: Exception
+            var response = await _httpClient.GetAsync(Constants.CURRENCIES);
+
+            string content = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+
+            return JsonConvert.DeserializeObject<Currency[]>(content);
+        }
+
+        // Возвращает объект класса Rate по ID.
+        private async Task<Rate> GetRateAsync(int id)
+        {
+            // TODO: Exception
+            var request = $"{Constants.RATES}{id}";
+            var response = await _httpClient.GetAsync(request);
+
+            string content = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+
+            return JsonConvert.DeserializeObject<Rate>(content);
         }
     }
 }

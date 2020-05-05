@@ -5,54 +5,61 @@ namespace CurrencyExchangeApp
 {
     public static class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            var curController = new CurrencyExchangeController();
-
-            Menu(curController);
+            Start();
         }
 
-        private static void Menu(CurrencyExchangeController controller)
+        private static void Start()
         {
+            var curController = new CurrencyExchangeController();
+            var saveAndReadController = new SaveAndReadDataController();
+
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
-                Console.WriteLine();
                 Console.WriteLine("Меню:");
                 Console.WriteLine("[1] Список валют.\n[2] Узнать курс.\n[3] Вывести сохраненные запросы\n[4] Выход.");
-                Console.WriteLine("Выберите действие, путем ввода его номера.");
-               
+                Console.Write("Укажите действие (цифра): ");
+                var userInput = Console.ReadLine();
+                Console.WriteLine();
 
-                switch (Console.ReadLine())
+                switch (userInput)
                 {
                     case "1":
                     {
-                        controller.ShowAllCurrencies();
-                        break;
-                    } 
+                        curController.ShowAllCurrencies();
+                    }
+                    break;
+
                     case "2":
                     {
-                        controller.ShowRate();
-                        break;
+                        curController.ShowRate();
                     }
+                    break;
+
                     case "3":
                     {
-                        controller.ShowSavedData();
-                        break;
+                        saveAndReadController.ReadData();
                     }
+                    break;
+
                     case "4":
                     {
                         Environment.Exit(0);
-                        break;
-                    } 
+                    }
+                    break;
+
                     default:
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Некорректный ввод.");
-                        break;
                     }
+                    break;
                 }
+
+                Console.WriteLine();
             }
         }
     }

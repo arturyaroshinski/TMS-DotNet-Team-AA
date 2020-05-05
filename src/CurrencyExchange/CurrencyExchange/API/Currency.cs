@@ -14,7 +14,7 @@ namespace CurrencyExchange.API
         /// <summary>
         /// Родительский код.
         /// </summary>
-        public Nullable<int> Cur_ParentID { get; set; }
+        public int? Cur_ParentID { get; set; }
 
         /// <summary>
         /// Цифровой код.
@@ -84,11 +84,11 @@ namespace CurrencyExchange.API
         /// <summary>
         /// Дата включения валюты в перечень валют, к которым устанавливается официальный курс бел. рубля.
         /// </summary>
-        public System.DateTime Cur_DateStart { get; set; }
+        public DateTime Cur_DateStart { get; set; }
 
         /// <summary>
         /// Дата исключения валюты из перечня валют, к которым устанавливается официальный курс бел. рубля.
         /// </summary>
-        public System.DateTime Cur_DateEnd { get; set; }
+        public DateTime Cur_DateEnd { get; set; }
     }
 }
