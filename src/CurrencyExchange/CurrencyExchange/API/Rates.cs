@@ -48,7 +48,7 @@ namespace CurrencyExchange.API
         /// Дата, на которую запрашивается курс.
         /// </summary>
         [Key]
-        public System.DateTime Date { get; set; }
+        public DateTime Date { get; set; }
 
         /// <summary>
         /// Курс.
