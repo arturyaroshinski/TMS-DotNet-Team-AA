@@ -15,24 +15,12 @@ namespace CurrencyExchange
 
         private DateTime LastUpdated { get; set; } = new DateTime();
 
-
-
-
-        /// <summary>
-        /// Вывод курса валюты на консоль по ID.
-        /// </summary>
-        public void ShowRate()
+        // Получение ID курса из консоли. Возвращает полученный id.
+        private int GetIDFromConsole()
         {
-            // TODO: refactor it!!!
+            int id;
 
-
-            // TODO: Delete magic number
-            int id = 298;
-            bool flag = false;
-
-
-            // TODO: To another method 1
-            while (!flag)
+            while (true)
             {
                 Console.WriteLine();
                 Console.WriteLine("Для получения курса введите ID валюты(Для просмотра списка валют введите 0).");
@@ -55,32 +43,62 @@ namespace CurrencyExchange
                 }
             }
 
+            return id;
+        }
 
-
-            // TODO: To another method 2
+        // Получает курс по его ID, выводит о курсе информацию в консоль. Возвращает информацию о курсе.
+        private string WriteRateToConsole(int id)
+        {
             Rate rate = GetRateAsync(id).GetAwaiter().GetResult();
             var text = $"{rate.Date:D}: {rate.Cur_Abbreviation}. Курс по НБРБ - {rate.Cur_OfficialRate} за {rate.Cur_Scale} единиц валюты.";
             Console.WriteLine(text);
+            return text;
+        }
 
-
-
-            // TODO: To another method 3
-            // TODO: Exception (User input)
-            Console.WriteLine("Нажмите Y, если хотите сохранить данные курса.");
-            if (Console.ReadKey().Key.Equals(ConsoleKey.Y))
+        // Сохраняет информацию о курсе в файл.
+        private void SaveRateToFile(string text)
+        {
+            while (true)
             {
-                var saveData = new SaveAndReadDataController();
-                saveData.SaveDateAsync(Constants.PATH, text).GetAwaiter().GetResult();
-
-                Console.ForegroundColor = ConsoleColor.Green;
-
-                Console.WriteLine("\nСохранение выполнено успешно.");
+                Console.WriteLine();
+                Console.WriteLine("Нажмите Y, если хотите сохранить данные курса. Введите N, если нет.");
+                
+                switch (Console.ReadKey().Key)
+                {
+                    case ConsoleKey.Y:
+                    {
+                        var saveData = new SaveAndReadDataController();
+                        saveData.SaveDateAsync(Constants.PATH, text).GetAwaiter().GetResult();
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("\nСохранение выполнено успешно.");
+                        return;
+                    }
+                    case ConsoleKey.N:
+                    {
+                        Console.WriteLine("Вы отказались от сохранения. Данные сохранены не будут.");
+                        return;
+                    }
+                    default:
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Введено неправильноe значение. Попробуйте еще раз");
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        continue;
+                    }
+                }
             }
         }
 
 
-
-
+        /// <summary>
+        /// Вывод курса валюты на консоль по ID и сохранение данных в файл.
+        /// </summary>
+        public void ShowRate()
+        {
+            // TODO: refactor it!!!
+            string text = WriteRateToConsole(GetIDFromConsole());
+            SaveRateToFile(text);
+        }
 
         /// <summary>
         /// Проверить существует ли Id.
@@ -132,8 +150,16 @@ namespace CurrencyExchange
         // Возвращает массив объектов класса Currency.
         private async Task<Currency[]> GetAllCurrenciesAsync()
         {
-            // TODO: Exception
-            var response = await _httpClient.GetAsync(Constants.CURRENCIES);
+            HttpResponseMessage response;
+            try
+            {
+                response = await _httpClient.GetAsync(Constants.CURRENCIES);
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Возникла ошибка при получении курса валют. Побробуйте позже");
+                return null;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
@@ -144,9 +170,17 @@ namespace CurrencyExchange
         // Возвращает объект класса Rate по ID.
         private async Task<Rate> GetRateAsync(int id)
         {
-            // TODO: Exception
             var request = $"{Constants.RATES}{id}";
-            var response = await _httpClient.GetAsync(request);
+            HttpResponseMessage response;
+            try
+            {
+                response = await _httpClient.GetAsync(request);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Возникла ошибка при получении курса валют. Побробуйте позже");
+                return null;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
